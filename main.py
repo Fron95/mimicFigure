@@ -55,6 +55,9 @@ class Quote(BaseModel) :
     document: str = Field(description='the chat message from figure')
 
 
+@app.get('/')
+def start() :
+    return {"ment" : "hi"}
 
 @app.get("/quote",
         summary="return datas you can refer with creating figure's answer",

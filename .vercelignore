@@ -1,9 +1,8 @@
-.env
+; .env
 .cache/
 .files/
 mimicfigure/
 splitted/
-app.ipynb_checkpoints
 # Created by https://www.toptal.com/developers/gitignore/api/python,venv
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,venv
 
