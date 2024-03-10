@@ -1,6 +1,7 @@
 # api key
 from dotenv import load_dotenv
 import os
+from typing import Union
 
 # langchain
 from langchain_openai import ChatOpenAI
@@ -89,8 +90,8 @@ class Quote(BaseModel) :
 class Item(BaseModel):
     figure: str
     question: str 
-    summary : str| None = None
-    buffer: dict| None = None
+    summary : Union[str, None] = None
+    buffer: dict | None = None
     
 
 @app.get("/", tags=["Root"])
