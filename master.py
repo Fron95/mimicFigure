@@ -93,9 +93,9 @@ class Item(BaseModel):
     buffer: dict| None = None
     
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+@app.get("/", tags=["Root"])
+async def hello():
+    return {"Hello": "you success deploy guys..."}
 
 @app.post("/quote",
         summary="return figure's answer",
