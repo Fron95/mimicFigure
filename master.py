@@ -93,6 +93,9 @@ class Item(BaseModel):
     buffer: dict| None = None
     
 
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
 
 @app.post("/quote",
         summary="return figure's answer",
