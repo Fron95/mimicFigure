@@ -20,7 +20,9 @@ from pydantic import BaseModel, Field
 
 load_dotenv() # env파일 호출. apikey 호출
 # openai_apikey = os.environ.get('OPENAI_API_KEY')
-llm = ChatOpenAI() # off-the-shelf chain (제공 체인) 3.5-turbo를 사용중이다.
+llm = ChatOpenAI(
+    llm = ChatOpenAI(openai_api_key=os.environ.get("OPENAI_API_KEY"))
+) # off-the-shelf chain (제공 체인) 3.5-turbo를 사용중이다.
 from langchain.memory import ConversationSummaryBufferMemory
 memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=30)
 
@@ -31,7 +33,7 @@ cache_dir = LocalFileStore("./.cache/steve_jobs") # local store 위치
 embeddings = OpenAIEmbeddings() #step3 : embedding (ada-002 model)
 cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir) #step 3-1 : embedding caching
 # vector store(pinecone)
-vectorstore = PineconeVectorStore(index_name='mimicfigures', embedding=cached_embeddings, namespace='steve_jobs')
+vectorstore = PineconeVectorStore(pinecone_api_key=os.environ.get("PINECONE_API_KEY"),index_name='mimicfigures', embedding=cached_embeddings, namespace='steve_jobs')
 # 검색 잘 되는지확인
 search_result = vectorstore.similarity_search(figure)
 if len(search_result) > 0 :
@@ -91,7 +93,7 @@ class Item(BaseModel):
     figure: str
     question: str 
     summary : Union[str, None] = None
-    buffer: dict | None = None
+    buffer: Union[dict, None] = None
     
 
 @app.get("/", tags=["Root"])
