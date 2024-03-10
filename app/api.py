@@ -20,9 +20,9 @@ from pydantic import BaseModel, Field
 
 load_dotenv() # env파일 호출. apikey 호출
 # openai_apikey = os.environ.get('OPENAI_API_KEY')
-llm = ChatOpenAI(
-    llm = ChatOpenAI(openai_api_key=os.environ.get("OPENAI_API_KEY"))
-) # off-the-shelf chain (제공 체인) 3.5-turbo를 사용중이다.
+
+llm = ChatOpenAI(openai_api_key=os.environ.get("OPENAI_API_KEY"))
+ # off-the-shelf chain (제공 체인) 3.5-turbo를 사용중이다.
 from langchain.memory import ConversationSummaryBufferMemory
 memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=30)
 
