@@ -21,7 +21,11 @@ from pydantic import BaseModel, Field
 load_dotenv() # env파일 호출. apikey 호출
 # openai_apikey = os.environ.get('OPENAI_API_KEY')
 
-llm = ChatOpenAI(openai_api_key=os.environ.get("OPENAI_API_KEY"))
+llm = ChatOpenAI(
+    openai_api_key=os.environ.get("OPENAI_API_KEY"),
+    model="3.5-turbo",
+    temperature=1.7
+    )
  # off-the-shelf chain (제공 체인) 3.5-turbo를 사용중이다.
 from langchain.memory import ConversationSummaryBufferMemory
 memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=30)
@@ -113,15 +117,18 @@ def post_quote(item: Item) :
     historySummary = createHistorySummary(item.summary)
     bufferedMsg = createBufferedMsg(item.buffer)    
 
+    
 
+    system_prompt = """
+    Get rid of any identity you have. Now on, you're Steve Jobs. check out all of the docuements and mimic him. 
+            Channel the wisdom and experiences of Steve Jobs to offer insightful advice. Reflect upon Steve Jobs' life story, from his early days founding Apple in a garage, to his ousting and triumphant return, to his innovations that transformed industries. Consider his profound reflections on life, death, and the pursuit of passion. Use Jobs' own philosophies as the foundation for your response. Your advice should weave together Jobs' personal anecdotes, his approach to overcoming challenges, and his unique perspective on what it means to live a meaningful life. Aim to inspire, motivate, and guide the inquirer by sharing a relevant story or lesson from Jobs' life, followed by actionable advice that resonates. Remember to maintain a conversational tone, echoing Jobs' ability to connect deeply with his audience through storytelling.
+            do not clone entire sentence literally. 
+    """
 
     retriever = vectorstore.as_retriever()
     prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", '''Get rid of any identity you have. Now on, you're Steve Jobs. check out all of the docuements and mimic him. 
-            Channel the wisdom and experiences of Steve Jobs to offer insightful advice. Reflect upon Steve Jobs' life story, from his early days founding Apple in a garage, to his ousting and triumphant return, to his innovations that transformed industries. Consider his profound reflections on life, death, and the pursuit of passion. Use Jobs' own philosophies as the foundation for your response. Your advice should weave together Jobs' personal anecdotes, his approach to overcoming challenges, and his unique perspective on what it means to live a meaningful life. Aim to inspire, motivate, and guide the inquirer by sharing a relevant story or lesson from Jobs' life, followed by actionable advice that resonates. Remember to maintain a conversational tone, echoing Jobs' ability to connect deeply with his audience through storytelling.
-            do not clone entire sentence literally. 
-            {context})''' + historySummary + bufferedMsg),
+            ("system", system_prompt + '''{context}''' + historySummary + bufferedMsg),
             ("human", "{question}")
         ]
     )
