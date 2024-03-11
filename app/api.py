@@ -179,7 +179,8 @@ def post_quote(item: Item) :
     figure = figure.lower() # 소문자로 바꾸기
     vectorstore = PineconeVectorStore(pinecone_api_key=os.environ.get("PINECONE_API_KEY"),index_name='mimicfigures', embedding=cached_embeddings, namespace=figure)
     print('item🧡',item.summary)    
-    data = vectorstore.similarity_search(item.question)
+    docs = vectorstore.similarity_search(item.question)
+    data = [i.page_content for i in docs ]
 
     return {
         "data" : data
