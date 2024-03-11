@@ -110,9 +110,7 @@ async def hello():
         response_description='chat message from figure(type:string)',
         response_model=Quote)
 def post_quote(item: Item) :
-    print('item🧡',item)
-    print('item🧡',type(item))
-    print('item🧡',item.summary)
+    print('received item🧡',item)
 
     historySummary = createHistorySummary(item.summary)
     bufferedMsg = createBufferedMsg(item.buffer)    
@@ -143,7 +141,8 @@ def post_quote(item: Item) :
     summary = memory.predict_new_summary([human_msg, ai_msg], historySummary+bufferedMsg)
 
 
-
+    print('returned quote🧡',response.content)
+    print('returned summary🧡',summary)
     return {
         "quote" : response.content,
         "summary" : summary
@@ -172,15 +171,16 @@ class Data(BaseModel) :
          response_description="list of datas related to the figure",
          response_model=Data)
 
-def post_quote(item: Item) :
-    # 공백 대체 (namespace를 정확히 하기 위해서 반드시 action에다가 정확하게 명시하기.)
-    
+def post_data(item: Item) :
+    # 공백 대체 (namespace를 정확히 하기 위해서 반드시 action에다가 정확하게 명시하기.)    
     figure = re.sub(r'\s+', '', item.figure)  # 연속된 공백을 하나의 공백으로 대체
     figure = figure.lower() # 소문자로 바꾸기
     vectorstore = PineconeVectorStore(pinecone_api_key=os.environ.get("PINECONE_API_KEY"),index_name='mimicfigures', embedding=cached_embeddings, namespace=figure)
-    print('item🧡',item.summary)    
+    print('[/data]received question🧡',item.question)    
+    print('[/data]received figure🧡',item.figure)    
     docs = vectorstore.similarity_search(item.question)
     data = [i.page_content for i in docs ]
+    print('[/data]returned data🧡',data)    
 
     return {
         "data" : data
