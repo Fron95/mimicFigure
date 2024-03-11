@@ -1,7 +1,8 @@
 # api key
 from dotenv import load_dotenv
 import os
-from typing import Union
+from typing import Union, List
+import re
 
 # langchain
 from langchain_openai import ChatOpenAI
@@ -22,9 +23,8 @@ load_dotenv() # env파일 호출. apikey 호출
 # openai_apikey = os.environ.get('OPENAI_API_KEY')
 
 llm = ChatOpenAI(
-    openai_api_key=os.environ.get("OPENAI_API_KEY"),
-    model="3.5-turbo",
-    temperature=1.7
+    openai_api_key=os.environ.get("OPENAI_API_KEY"),    
+    temperature=1.0
     )
  # off-the-shelf chain (제공 체인) 3.5-turbo를 사용중이다.
 from langchain.memory import ConversationSummaryBufferMemory
@@ -94,10 +94,10 @@ class Quote(BaseModel) :
     summary: str = Field(description='the summary of current conversation')
 
 class Item(BaseModel):
-    figure: str
-    question: str 
-    summary : Union[str, None] = None
-    buffer: Union[dict, None] = None
+    figure: str = Field(description='the figure user want to talk to. only lowercase allowed, word-spacing is not allowed' )
+    question: str = Field(description='the chat message from user')
+    summary : Union[str, None] = Field(None, description='the summary of current conversation')
+    buffer: Union[dict, None] = Field(None, description='the buffered chat messages')
     
 
 @app.get("/", tags=["Root"])
@@ -149,3 +149,38 @@ def post_quote(item: Item) :
         "summary" : summary
     }
 
+
+
+# class Item(BaseModel):
+    # figure: str = Field(description='the figure user want to talk to' )
+    # question: str = Field(description='the chat message from user')
+    # summary : Union[str, None] = Field(None, description='the summary of current conversation')
+    # buffer: Union[dict, None] = Field(None, description='the buffered chat messages')
+
+
+class Data(BaseModel) :            
+    data: List[str] = Field([], description='the chat messages from figure')
+
+@app.post("/data", 
+         summary="return figure's data",
+         description="""
+            For a more detailed and sophisticated answer, return data related to the person. 
+            The data consists of books or interviews related to the person, for example. 
+            From this, you can learn about the person's thoughts, speech patterns, vision, personality,
+            stories, information, and more.
+         """,
+         response_description="list of datas related to the figure",
+         response_model=Data)
+
+def post_quote(item: Item) :
+    # 공백 대체 (namespace를 정확히 하기 위해서 반드시 action에다가 정확하게 명시하기.)
+    
+    figure = re.sub(r'\s+', '', item.figure)  # 연속된 공백을 하나의 공백으로 대체
+    figure = figure.lower() # 소문자로 바꾸기
+    vectorstore = PineconeVectorStore(pinecone_api_key=os.environ.get("PINECONE_API_KEY"),index_name='mimicfigures', embedding=cached_embeddings, namespace=figure)
+    print('item🧡',item.summary)    
+    data = vectorstore.similarity_search(item.question)
+
+    return {
+        "data" : data
+    }
