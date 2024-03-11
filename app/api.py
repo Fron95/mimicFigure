@@ -85,7 +85,7 @@ app = FastAPI(
     title = "Talk to historical figures",
     description= "Share your problems, thoughts, and advice with a historical figure.",
     servers=[{
-        "url" : "https://myself-nathan-eur-organised.trycloudflare.com"
+        "url" : "https://mimic-figure.vercel.app"
     }]
 )
 
