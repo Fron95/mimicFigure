@@ -96,7 +96,7 @@ class Item(BaseModel):
 
 @app.get("/", tags=["Root"])
 async def hello():
-    return {"Hello": "you success deploy guys..."}
+    return {"Privacy Policy": "We NEVER gather or store any of your privacy information. don't worry. "}
 
 @app.post("/quote",
         summary="return figure's answer",
