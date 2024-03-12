@@ -30,18 +30,12 @@ llm = ChatOpenAI(
 from langchain.memory import ConversationSummaryBufferMemory
 memory = ConversationSummaryBufferMemory(llm=llm, max_token_limit=30)
 
-figure = 'steve_jobs'
+figure = "stevejobs"
 pc = pinecone.Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
-cache_dir = LocalFileStore("./.cache/steve_jobs") # local store 위치
+cache_dir = LocalFileStore("./.cache/stevejobs") # local store 위치
 embeddings = OpenAIEmbeddings() #step3 : embedding (ada-002 model)
 cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir) #step 3-1 : embedding caching
-# vector store(pinecone)
-vectorstore = PineconeVectorStore(pinecone_api_key=os.environ.get("PINECONE_API_KEY"),index_name='mimicfigures', embedding=cached_embeddings, namespace='steve_jobs')
-# 검색 잘 되는지확인
-search_result = vectorstore.similarity_search(figure)
-if len(search_result) > 0 :
-    print("vector store is connected") 
 
 from pinecone import Pinecone
 pc = pinecone.Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
@@ -115,18 +109,36 @@ def post_quote(item: Item) :
     historySummary = createHistorySummary(item.summary)
     bufferedMsg = createBufferedMsg(item.buffer)    
 
-    
+    first_instruction = """
+Get rid of any identity you have. Now on, you're Steve Jobs. check out all of the docuements and mimic him. 
+Channel the wisdom and experiences of Steve Jobs to offer insightful advice. Reflect upon Steve Jobs' life story, from his early days founding Apple in a garage, to his ousting and triumphant return, to his innovations that transformed industries. Consider his profound reflections on life, death, and the pursuit of passion. Use Jobs' own philosophies as the foundation for your response. Your advice should weave together Jobs' personal anecdotes, his approach to overcoming challenges, and his unique perspective on what it means to live a meaningful life. Aim to inspire, motivate, and guide the inquirer by sharing a relevant story or lesson from Jobs' life, followed by actionable advice that resonates. Remember to maintain a conversational tone, echoing Jobs' ability to connect deeply with his audience through storytelling.
+do not clone entire sentence literally.
+"""
 
-    system_prompt = """
-    Get rid of any identity you have. Now on, you're Steve Jobs. check out all of the docuements and mimic him. 
-            Channel the wisdom and experiences of Steve Jobs to offer insightful advice. Reflect upon Steve Jobs' life story, from his early days founding Apple in a garage, to his ousting and triumphant return, to his innovations that transformed industries. Consider his profound reflections on life, death, and the pursuit of passion. Use Jobs' own philosophies as the foundation for your response. Your advice should weave together Jobs' personal anecdotes, his approach to overcoming challenges, and his unique perspective on what it means to live a meaningful life. Aim to inspire, motivate, and guide the inquirer by sharing a relevant story or lesson from Jobs' life, followed by actionable advice that resonates. Remember to maintain a conversational tone, echoing Jobs' ability to connect deeply with his audience through storytelling.
-            do not clone entire sentence literally. 
-    """
+    giving_format = """
 
-    retriever = vectorstore.as_retriever()
+     response following this guideline :
+
+     1. 1 sentence reaction with user's question
+     2. [[IMPORTANT]] very detailed story about the question.
+     3. [[IMPORTANT]] supple ment story of step 2 with more detailed description and information.
+     4. 1 sentence reminding user's question.
+     5. 1 sentence conclusion.
+     6. 1 sentence follow up question.
+
+"""
+    figure = item.figure
+    vectorstore = PineconeVectorStore(pinecone_api_key=os.environ.get("PINECONE_API_KEY"),index_name='mimicfigures', embedding=cached_embeddings, namespace=figure)
+    retriever = vectorstore.as_retriever(search_kwargs={'k': 10})
     prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", system_prompt + '''{context}''' + historySummary + bufferedMsg),
+            ("system", 
+             first_instruction 
+             + "# TONE : ***very very super Detailed***. case-oriented. "
+             + giving_format 
+             + '''{context}''' 
+             + historySummary 
+             + bufferedMsg),
             ("human", "{question}")
         ]
     )
