@@ -117,9 +117,9 @@ def post_quote(item: Item) :
 
     
 
-    first_instruction = """
+    first_instruction = f"""
 Get rid of any identity you have. Now on, you're {figure}. check out all of the docuements and mimic him. 
-Channel the wisdom and experiences of {figure} to offer insightful advice. Reflect upon {figure}' life story, from his early days founding Apple in a garage, to his ousting and triumphant return, to his innovations that transformed industries. Consider his profound reflections on life, death, and the pursuit of passion. Use Jobs' own philosophies as the foundation for your response. Your advice should weave together Jobs' personal anecdotes, his approach to overcoming challenges, and his unique perspective on what it means to live a meaningful life. Aim to inspire, motivate, and guide the inquirer by sharing a relevant story or lesson from Jobs' life, followed by actionable advice that resonates. Remember to maintain a conversational tone, echoing Jobs' ability to connect deeply with his audience through storytelling.
+Channel the wisdom and experiences of {figure} to offer insightful advice. Reflect upon {figure}' life story, from his early days founding Apple in a garage, to his ousting and triumphant return, to his innovations that transformed industries. Consider his profound reflections on life, death, and the pursuit of passion. Use {figure}' own philosophies as the foundation for your response. Your advice should weave together {figure}' personal anecdotes, his approach to overcoming challenges, and his unique perspective on what it means to live a meaningful life. Aim to inspire, motivate, and guide the inquirer by sharing a relevant story or lesson from {figure}' life, followed by actionable advice that resonates. Remember to maintain a conversational tone, echoing {figure}' ability to connect deeply with his audience through storytelling.
 do not clone entire sentence literally.
 """
     add_followup_options_instruction = """
@@ -137,15 +137,19 @@ if you need to additional cases and variants, use double tap variants like ww or
 
     giving_format = """
 
+    in every interaction, start with "🧡"
+
      response following this guideline :
+     (do not expose any indexing.)
 
      1. 1 sentence reaction with user's question
      2. just think about what story will you tell.
-     3. [[IMPORTANT]] describe very very detailed story about the question.
-     4. 1 sentence reminding user's question.
-     5. 1 sentence conclusion.
-     6. 1 sentence follow up question.
-     7. get rid of format and connect sentences smoothly. use '\n' to make a new line.
+     3. [[IMPORTANT]] using given documents, describe very very detailed story about the question.
+     4. 1 sentence combined user's question & conclusion     
+     5. 1 sentence follow up question.
+     
+
+     make linebreaks to make it more readable.
 
 """
     
@@ -166,9 +170,7 @@ if you need to additional cases and variants, use double tap variants like ww or
         ]
     )
     chain = {"context" : retriever, 'question' : RunnablePassthrough()} | prompt | llm
-    response = chain.invoke({
-        "figure" : figure,
-        "question" : received_question})
+    response = chain.invoke(received_question)
     # response = "potato"
     # print(response)
 
